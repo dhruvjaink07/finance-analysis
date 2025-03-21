@@ -6,6 +6,8 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:uuid/uuid.dart';
 
 class ChatbotScreen extends StatefulWidget {
+  const ChatbotScreen({super.key});
+
   @override
   _ChatbotScreenState createState() => _ChatbotScreenState();
 }
@@ -42,17 +44,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   // Function to send message
-  void _sendMessage(String text) {
-    if (text.isEmpty) return;
-
-    final message = types.TextMessage(
+  void _sendMessage(types.PartialText message) {
+    final textMessage = types.TextMessage(
       id: _uuid.v4(),
       author: _user,
-      text: text,
+      text: message.text,
     );
 
-    _addMessage(message);
-    _getBotResponse(text);
+    _addMessage(textMessage);
+    _getBotResponse(message.text);
   }
 
   // Function to simulate bot response
@@ -77,66 +77,76 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Finance AI Chatbot")),
+      appBar: AppBar(
+        title: const Text(
+          "Finance Assistant",
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        toolbarHeight: 70,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 15),
+            child: const Icon(Icons.help_outline, color: Colors.white),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
             child: Chat(
               messages: _messages,
-              onSendPressed: (partialText) => _sendMessage(partialText.text),
               user: _user,
+              onSendPressed: _sendMessage,
+              theme: DefaultChatTheme(
+                primaryColor: Colors.green,
+                secondaryColor: Colors.blue,
+                backgroundColor: Colors.black,
+                inputBackgroundColor: Colors.black,
+                inputTextColor: Colors.white,
+                inputBorderRadius: BorderRadius.circular(25),
+                inputContainerDecoration: BoxDecoration(
+                  border: Border.all(color: Colors.green, width: 1),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                inputTextStyle: const TextStyle(color: Colors.white),
+              ),
             ),
           ),
           if (_uploadedFile != null)
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
-                  Icon(Icons.insert_drive_file, color: Colors.blue),
-                  SizedBox(width: 8),
+                  const Icon(Icons.insert_drive_file, color: Colors.blue),
+                  const SizedBox(width: 8),
                   Expanded(
-                      child: Text(_fileName!, overflow: TextOverflow.ellipsis)),
+                    child: Text(
+                      _fileName!,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
                   IconButton(
-                    icon: Icon(Icons.close, color: Colors.red),
+                    icon: const Icon(Icons.close, color: Colors.red),
                     onPressed: () => setState(() => _uploadedFile = null),
                   ),
                 ],
               ),
             ),
-          _buildInputArea(),
         ],
       ),
-    );
-  }
-
-  // Input field with send & attach buttons
-  Widget _buildInputArea() {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)]),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.attach_file, color: Colors.blue),
-            onPressed: _pickFile,
-          ),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Ask about revenue, risk, investment...",
-                border: InputBorder.none,
-              ),
-              onSubmitted: _sendMessage,
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.send, color: Colors.blue),
-            onPressed: () {},
-          ),
-        ],
-      ),
+      backgroundColor: Colors.black,
     );
   }
 }
